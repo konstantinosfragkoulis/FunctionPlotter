@@ -38,13 +38,9 @@
 
         function drawAxes() {
             const sceneEl = document.querySelector('a-scene');
-            // Axis lengths
             const axisLength = 5;
-            // X-axis
             createAxisLine(sceneEl, {x: -axisLength, y: 0, z: 0}, {x: axisLength, y: 0, z: 0}, 'red');
-            // Y-axis
             createAxisLine(sceneEl, {x: 0, y: -axisLength, z: 0}, {x: 0, y: axisLength, z: 0}, 'green');
-            // Z-axis
             createAxisLine(sceneEl, {x: 0, y: 0, z: -axisLength}, {x: 0, y: 0, z: axisLength}, 'blue');
         }
     
@@ -56,14 +52,9 @@
 
             let rotationX, rotationY, rotationZ;
 
-            // Check if this is the Y-axis and set rotation explicitly if so
-            if (start.x === 0 && start.z === 0 && end.x === 0 && end.z === 0) {
-                rotationX = rotationY = rotationZ = 0; // Explicitly set for Y-axis to ensure it points upwards
-            } else {
-                rotationX = -Math.atan2(end.z - start.z, Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2))) * (180 / Math.PI);
-                rotationY = 0;
-                rotationZ = -Math.atan2(end.x - start.x, end.y - start.y) * (180 / Math.PI);
-            }
+            rotationX = -Math.atan2(end.z - start.z, Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2))) * (180 / Math.PI);
+            rotationY = 0;
+            rotationZ = -Math.atan2(end.x - start.x, end.y - start.y) * (180 / Math.PI);
 
             const axisEl = document.createElement('a-cylinder');
             axisEl.setAttribute('radius', '0.01');
@@ -76,7 +67,6 @@
 
         function addAxisLabels() {
             const sceneEl = document.querySelector('a-scene');
-            // Add labels
             createAxisLabel(sceneEl, 'X', {x: 2.2, y: 0, z: 0});
             createAxisLabel(sceneEl, 'Y', {x: 0, y: 2.2, z: 0.05});
             createAxisLabel(sceneEl, 'Z', {x: 0, y: 0, z: 2.2});
@@ -120,7 +110,6 @@
             }
         }
 
-        // Call drawAxes and addAxisLabels when the scene is loaded
         document.querySelector('a-scene').addEventListener('loaded', function() {
             drawAxes();
             addAxisLabels();

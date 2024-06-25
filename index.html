@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Function Grapher</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.0.0/math.min.js"></script>
+    <style>
+        #functionInput {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <input id="functionInput" type="text" placeholder="Enter a function (e.g., sin(x), x^2)" />
+    <a-scene background="color: #ECECEC">
+        <!-- Camera pointing towards the origin (0, 0, 0) -->
+        <a-camera position="0 0 5"wasd-controls="acceleration: 10"></a-camera>
+        <!-- Graph will be rendered here -->
+    </a-scene>
+
+    <script>
+        document.getElementById('functionInput').addEventListener('change', function(event) {
+            let functionText = event.target.value;
+            // Replace 'ln' with 'log' to use mathjs's natural logarithm function
+            functionText = functionText.replace(/ln/g, 'log');
+            try {
+                const expr = math.compile(functionText);
+                updateGraph(expr);
+            } catch (error) {
+                console.error('Error parsing function. Please check the syntax.');
+            }
+        });
+
+        function drawAxes() {
+            const sceneEl = document.querySelector('a-scene');
+            // Axis lengths
+            const axisLength = 5;
+            // X-axis
+            createAxisLine(sceneEl, {x: -axisLength, y: 0, z: 0}, {x: axisLength, y: 0, z: 0}, 'red');
+            // Y-axis
+            createAxisLine(sceneEl, {x: 0, y: -axisLength, z: 0}, {x: 0, y: axisLength, z: 0}, 'green');
+            // Z-axis
+            createAxisLine(sceneEl, {x: 0, y: 0, z: -axisLength}, {x: 0, y: 0, z: axisLength}, 'blue');
+        }
+    
+        function createAxisLine(sceneEl, start, end, color) {
+            const posX = (start.x + end.x) / 2;
+            const posY = (start.y + end.y) / 2;
+            const posZ = (start.z + end.z) / 2;
+            const length = Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2) + Math.pow(end.z - start.z, 2));
+
+            let rotationX, rotationY, rotationZ;
+
+            // Check if this is the Y-axis and set rotation explicitly if so
+            if (start.x === 0 && start.z === 0 && end.x === 0 && end.z === 0) {
+                rotationX = rotationY = rotationZ = 0; // Explicitly set for Y-axis to ensure it points upwards
+            } else {
+                rotationX = -Math.atan2(end.z - start.z, Math.sqrt(Math.pow(end.x - start.x, 2) + Math.pow(end.y - start.y, 2))) * (180 / Math.PI);
+                rotationY = 0;
+                rotationZ = -Math.atan2(end.x - start.x, end.y - start.y) * (180 / Math.PI);
+            }
+
+            const axisEl = document.createElement('a-cylinder');
+            axisEl.setAttribute('radius', '0.01');
+            axisEl.setAttribute('height', length);
+            axisEl.setAttribute('color', color);
+            axisEl.setAttribute('position', `${posX} ${posY} ${posZ}`);
+            axisEl.setAttribute('rotation', `${rotationX} ${rotationY} ${rotationZ}`);
+            sceneEl.appendChild(axisEl);
+        }
+
+        function addAxisLabels() {
+            const sceneEl = document.querySelector('a-scene');
+            // Add labels
+            createAxisLabel(sceneEl, 'X', {x: 2.2, y: 0, z: 0});
+            createAxisLabel(sceneEl, 'Y', {x: 0, y: 2.2, z: 0.05});
+            createAxisLabel(sceneEl, 'Z', {x: 0, y: 0, z: 2.2});
+        }
+
+        function createAxisLabel(sceneEl, text, position) {
+            const textEl = document.createElement('a-text');
+            textEl.setAttribute('value', text);
+            textEl.setAttribute('color', 'black');
+            textEl.setAttribute('position', `${position.x} ${position.y} ${position.z}`);
+            textEl.setAttribute('align', 'center');
+            sceneEl.appendChild(textEl);
+        }
+
+        function updateGraph(expr) {
+            const sceneEl = document.querySelector('a-scene');
+            const previousLines = sceneEl.querySelectorAll('.graph-line');
+            previousLines.forEach(line => line.parentNode.removeChild(line));
+
+            for (let x = -5; x < 5; x += 0.01) {
+                const y1 = expr.evaluate({x: x});
+                const y2 = expr.evaluate({x: x + 0.005});
+                const lineEl = document.createElement('a-entity');
+
+                const midX = x + 0.0025;
+                const midY = (y1 + y2) / 2;
+                const length = Math.sqrt(Math.pow(0.005, 2) + Math.pow(y2 - y1, 2));
+                const angle = Math.atan2(y2 - y1, 0.005) * (180 / Math.PI);
+
+                lineEl.setAttribute('geometry', {
+                    primitive: 'box',
+                    depth: 0.01,
+                    height: 0.01,
+                    width: length
+                });
+                lineEl.setAttribute('material', {color: 'red'});
+                lineEl.setAttribute('position', `${midX} ${midY} 0`);
+                lineEl.setAttribute('rotation', `0 0 ${angle}`);
+                lineEl.classList.add('graph-line');
+                sceneEl.appendChild(lineEl);
+            }
+        }
+
+        // Call drawAxes and addAxisLabels when the scene is loaded
+        document.querySelector('a-scene').addEventListener('loaded', function() {
+            drawAxes();
+            addAxisLabels();
+        });
+    </script>
+</body>
+</html>

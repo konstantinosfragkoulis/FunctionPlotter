@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Function Grapher</title>
+    <title>My 3D Function Plotter</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.0.0/math.min.js"></script>
     <style>
@@ -18,18 +18,16 @@
 <body>
     <input id="functionInput" type="text" placeholder="Enter a function (e.g., sin(x), x^2)" />
     <a-scene background="color: #ECECEC">
-        <!-- Camera pointing towards the origin (0, 0, 0) -->
         <a-camera position="0 0 5"wasd-controls="acceleration: 10"></a-camera>
-        <!-- Graph will be rendered here -->
     </a-scene>
 
     <script>
         document.getElementById('functionInput').addEventListener('change', function(event) {
             let functionText = event.target.value;
-            // Replace 'ln' with 'log' to use mathjs's natural logarithm function
             functionText = functionText.replace(/ln/g, 'log');
             try {
                 const expr = math.compile(functionText);
+                console.log("Parsed expression: ", expr);
                 updateGraph(expr);
             } catch (error) {
                 console.error('Error parsing function. Please check the syntax.');

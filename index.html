@@ -90,6 +90,7 @@
             sceneEl.appendChild(textEl);
         }
         
+        const radToDeg = 180 / Math.PI;
         function updateGraph(expr) {
             const sceneEl = document.querySelector('a-scene');
             const previousLines = sceneEl.querySelectorAll('.graph-line');
@@ -102,31 +103,91 @@
                 if (!Array.isArray(y1)) y1 = [y1];
                 if (!Array.isArray(y2)) y2 = [y2];
 
-                const minLength = Math.min(y1.length, y2.length);
+                // Evaluate all the expressions in the arrays
+                for(let i = 0; i < y1.length; i++) {
+                    y1[i] = nerdamer(y1[i]).evaluate();
+                }
+                for(let i = 0; i < y2.length; i++) {
+                    y2[i] = nerdamer(y2[i]).evaluate();
+                }
+                if(y1.length > y2.length) {
+                    for (let i = 0; i < y1.length; i++) {
+                        const currentY1 = y1[i];
+                        // Set currentY2 to the closest value to currentY1 in the y2 array
+                        let currentY2 = y2[0];
+                        var minDiff = 999999;
+                        for(let j = 0; j < y2.length; j++) {
+                            const diff = Math.abs(y2[j] - currentY1);
+                            if (diff < minDiff) {
+                                minDiff = diff;
+                                currentY2 = y2[j];
+                                // Remove the value from the array so that it is not used again
+                                // y2.splice(j, 1);
+                                if(minDiff > 0.0051) {
+                                    console.log("Min diff: ", minDiff, "currentY2: ", currentY2, "currentY1: ", currentY1);
+                                }
+                            }
+                        }
 
-                for (let i = 0; i < minLength; i++) {
-                    const currentY1 = nerdamer(y1[i]).evaluate();
-                    const currentY2 = nerdamer(y2[i]).evaluate();
+                        const lineEl = document.createElement('a-entity');
 
-                    const lineEl = document.createElement('a-entity');
+                        const midX = x + 0.0025;
+                        const midY = (currentY1 + currentY2) / 2;
+                        const length = Math.sqrt(Math.pow(0.005, 2) + Math.pow(currentY2 - currentY1, 2));
+                        const angle = Math.atan2(currentY2 - currentY1, 0.005) * radToDeg;
 
-                    const midX = x + 0.0025;
-                    const midY = (currentY1 + currentY2) / 2;
-                    const length = Math.sqrt(Math.pow(0.005, 2) + Math.pow(currentY2 - currentY1, 2));
-                    const angle = Math.atan2(currentY2 - currentY1, 0.005) * (180 / Math.PI);
+                        lineEl.setAttribute('geometry', {
+                            primitive: 'box',
+                            depth: 0.01,
+                            height: 0.01,
+                            width: length
+                        });
+                        lineEl.setAttribute('material', { color: 'red' });
+                        lineEl.setAttribute('position', `${midX} ${midY} 0`);
+                        lineEl.setAttribute('rotation', `0 0 ${angle}`);
+                        lineEl.classList.add('graph-line');
+                        sceneEl.appendChild(lineEl);
+                        console.log("Added line at x=", x, "y1=", currentY1, "y2=", currentY2);
+                    }
+                } else {
+                    for (let i = 0; i < y2.length; i++) {
+                        const currentY2 = y2[i];
+                        // Set currentY1 to the closest value to currentY1 in the y2 array
+                        let currentY1 = y1[0];
+                        var minDiff = 999999;
+                        for(let j = 0; j < y1.length; j++) {
+                            const diff = Math.abs(y1[j] - currentY2);
+                            if (diff < minDiff) {
+                                minDiff = diff;
+                                currentY1 = y1[j];
+                                // Remove the value from the array so that it is not used again
+                                // y1.splice(j, 1);
+                                if(minDiff > 0.0051) {
+                                    console.log("Min diff: ", minDiff, "currentY1: ", currentY1, "currentY2: ", currentY2);
+                                }
+                            }
+                        }
 
-                    lineEl.setAttribute('geometry', {
-                        primitive: 'box',
-                        depth: 0.01,
-                        height: 0.01,
-                        width: length
-                    });
-                    lineEl.setAttribute('material', { color: 'red' });
-                    lineEl.setAttribute('position', `${midX} ${midY} 0`);
-                    lineEl.setAttribute('rotation', `0 0 ${angle}`);
-                    lineEl.classList.add('graph-line');
-                    sceneEl.appendChild(lineEl);
-                    console.log("Added line at x=", x, "y1=", currentY1, "y2=", currentY2);
+                        const lineEl = document.createElement('a-entity');
+
+                        const midX = x + 0.0025;
+                        const midY = (currentY1 + currentY2) / 2;
+                        const length = Math.sqrt(Math.pow(0.005, 2) + Math.pow(currentY2 - currentY1, 2));
+                        const angle = Math.atan2(currentY2 - currentY1, 0.005) * radToDeg;
+
+                        lineEl.setAttribute('geometry', {
+                            primitive: 'box',
+                            depth: 0.01,
+                            height: 0.01,
+                            width: length
+                        });
+                        lineEl.setAttribute('material', { color: 'red' });
+                        lineEl.setAttribute('position', `${midX} ${midY} 0`);
+                        lineEl.setAttribute('rotation', `0 0 ${angle}`);
+                        lineEl.classList.add('graph-line');
+                        sceneEl.appendChild(lineEl);
+                        console.log("Added line at x=", x, "y1=", currentY1, "y2=", currentY2);
+                    }
                 }
             }
         }

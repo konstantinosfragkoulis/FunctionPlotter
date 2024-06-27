@@ -96,100 +96,220 @@
             const previousLines = sceneEl.querySelectorAll('.graph-line');
             previousLines.forEach(line => line.parentNode.removeChild(line));
 
-            for (let x = -5; x < 5; x += 0.01) {
-                let y1 = nerdamer(expr.sub('x', x)).solveFor('y');
-                let y2 = nerdamer(expr.sub('x', x + 0.005)).solveFor('y');
+            // Determine if x's correspond to more y's or vice versa
+            // We will test on five random x values between -5 and 5
+            averageYs = 0;
+            for (let x = -5; x < 5; x += 1) {
+                let y = nerdamer(expr.sub('x', x)).solveFor('y');
+                if (!Array.isArray(y)) y = [y];
+                averageYs += y.length;
+            }
+            averageYs /= 10;
 
-                if (!Array.isArray(y1)) y1 = [y1];
-                if (!Array.isArray(y2)) y2 = [y2];
+            averageXs = 0;
+            for (let y = -5; y < 5; y += 1) {
+                let x = nerdamer(expr.sub('y', y)).solveFor('x');
+                if (!Array.isArray(x)) x = [x];
+                averageXs += x.length;
+            }
+            averageXs /= 10;
 
-                // Evaluate all the expressions in the arrays
-                for(let i = 0; i < y1.length; i++) {
-                    y1[i] = nerdamer(y1[i]).evaluate();
-                }
-                for(let i = 0; i < y2.length; i++) {
-                    y2[i] = nerdamer(y2[i]).evaluate();
-                }
-                if(y1.length > y2.length) {
-                    for (let i = 0; i < y1.length; i++) {
-                        const currentY1 = y1[i];
-                        // Set currentY2 to the closest value to currentY1 in the y2 array
-                        let currentY2 = y2[0];
-                        var minDiff = 999999;
-                        for(let j = 0; j < y2.length; j++) {
-                            const diff = Math.abs(y2[j] - currentY1);
-                            if (diff < minDiff) {
-                                minDiff = diff;
-                                currentY2 = y2[j];
-                                // Remove the value from the array so that it is not used again
-                                // y2.splice(j, 1);
-                                if(minDiff > 0.0051) {
-                                    console.log("Min diff: ", minDiff, "currentY2: ", currentY2, "currentY1: ", currentY1);
-                                }
-                            }
-                        }
 
-                        const lineEl = document.createElement('a-entity');
+            console.log("Avergae Xs: ", averageXs, "Average Ys: ", averageYs);
 
-                        const midX = x + 0.0025;
-                        const midY = (currentY1 + currentY2) / 2;
-                        const length = Math.sqrt(Math.pow(0.005, 2) + Math.pow(currentY2 - currentY1, 2));
-                        const angle = Math.atan2(currentY2 - currentY1, 0.005) * radToDeg;
+            if(averageXs > averageYs) {
+                for (let x = -5; x < 5; x += 0.01) {
+                    let y1 = nerdamer(expr.sub('x', x)).solveFor('y');
+                    let y2 = nerdamer(expr.sub('x', x + 0.005)).solveFor('y');
 
-                        lineEl.setAttribute('geometry', {
-                            primitive: 'box',
-                            depth: 0.01,
-                            height: 0.01,
-                            width: length
-                        });
-                        lineEl.setAttribute('material', { color: 'red' });
-                        lineEl.setAttribute('position', `${midX} ${midY} 0`);
-                        lineEl.setAttribute('rotation', `0 0 ${angle}`);
-                        lineEl.classList.add('graph-line');
-                        sceneEl.appendChild(lineEl);
-                        console.log("Added line at x=", x, "y1=", currentY1, "y2=", currentY2);
+                    if (!Array.isArray(y1)) y1 = [y1];
+                    if (!Array.isArray(y2)) y2 = [y2];
+
+                    // Evaluate all the expressions in the arrays
+                    for(let i = 0; i < y1.length; i++) {
+                        y1[i] = nerdamer(y1[i]).evaluate();
                     }
-                } else {
-                    for (let i = 0; i < y2.length; i++) {
-                        const currentY2 = y2[i];
-                        // Set currentY1 to the closest value to currentY1 in the y2 array
-                        let currentY1 = y1[0];
-                        var minDiff = 999999;
-                        for(let j = 0; j < y1.length; j++) {
-                            const diff = Math.abs(y1[j] - currentY2);
-                            if (diff < minDiff) {
-                                minDiff = diff;
-                                currentY1 = y1[j];
-                                // Remove the value from the array so that it is not used again
-                                // y1.splice(j, 1);
-                                if(minDiff > 0.0051) {
-                                    console.log("Min diff: ", minDiff, "currentY1: ", currentY1, "currentY2: ", currentY2);
+                    for(let i = 0; i < y2.length; i++) {
+                        y2[i] = nerdamer(y2[i]).evaluate();
+                    }
+                    if(y1.length > y2.length) {
+                        for (let i = 0; i < y1.length; i++) {
+                            const currentY1 = y1[i];
+                            // Set currentY2 to the closest value to currentY1 in the y2 array
+                            let currentY2 = y2[0];
+                            var minDiff = 999999;
+                            for(let j = 0; j < y2.length; j++) {
+                                const diff = Math.abs(y2[j] - currentY1);
+                                if (diff < minDiff) {
+                                    minDiff = diff;
+                                    currentY2 = y2[j];
+                                    // Remove the value from the array so that it is not used again
+                                    // y2.splice(j, 1);
+                                    if(minDiff > 0.0051) {
+                                        console.log("Min diff: ", minDiff, "currentY2: ", currentY2, "currentY1: ", currentY1);
+                                    }
                                 }
                             }
+
+                            const lineEl = document.createElement('a-entity');
+
+                            const midX = x + 0.0025;
+                            const midY = (currentY1 + currentY2) / 2;
+                            const length = Math.sqrt(Math.pow(0.005, 2) + Math.pow(currentY2 - currentY1, 2));
+                            const angle = Math.atan2(currentY2 - currentY1, 0.005) * radToDeg;
+
+                            lineEl.setAttribute('geometry', {
+                                primitive: 'box',
+                                depth: 0.01,
+                                height: 0.01,
+                                width: length
+                            });
+                            lineEl.setAttribute('material', { color: 'red' });
+                            lineEl.setAttribute('position', `${midX} ${midY} 0`);
+                            lineEl.setAttribute('rotation', `0 0 ${angle}`);
+                            lineEl.classList.add('graph-line');
+                            sceneEl.appendChild(lineEl);
+                            console.log("Added line at x=", x, "y1=", currentY1, "y2=", currentY2);
                         }
+                    } else {
+                        for (let i = 0; i < y2.length; i++) {
+                            const currentY2 = y2[i];
+                            // Set currentY1 to the closest value to currentY1 in the y2 array
+                            let currentY1 = y1[0];
+                            var minDiff = 999999;
+                            for(let j = 0; j < y1.length; j++) {
+                                const diff = Math.abs(y1[j] - currentY2);
+                                if (diff < minDiff) {
+                                    minDiff = diff;
+                                    currentY1 = y1[j];
+                                    // Remove the value from the array so that it is not used again
+                                    // y1.splice(j, 1);
+                                    if(minDiff > 0.0051) {
+                                        console.log("Min diff: ", minDiff, "currentY1: ", currentY1, "currentY2: ", currentY2);
+                                    }
+                                }
+                            }
 
-                        const lineEl = document.createElement('a-entity');
+                            const lineEl = document.createElement('a-entity');
 
-                        const midX = x + 0.0025;
-                        const midY = (currentY1 + currentY2) / 2;
-                        const length = Math.sqrt(Math.pow(0.005, 2) + Math.pow(currentY2 - currentY1, 2));
-                        const angle = Math.atan2(currentY2 - currentY1, 0.005) * radToDeg;
+                            const midX = x + 0.0025;
+                            const midY = (currentY1 + currentY2) / 2;
+                            const length = Math.sqrt(Math.pow(0.005, 2) + Math.pow(currentY2 - currentY1, 2));
+                            const angle = Math.atan2(currentY2 - currentY1, 0.005) * radToDeg;
 
-                        lineEl.setAttribute('geometry', {
-                            primitive: 'box',
-                            depth: 0.01,
-                            height: 0.01,
-                            width: length
-                        });
-                        lineEl.setAttribute('material', { color: 'red' });
-                        lineEl.setAttribute('position', `${midX} ${midY} 0`);
-                        lineEl.setAttribute('rotation', `0 0 ${angle}`);
-                        lineEl.classList.add('graph-line');
-                        sceneEl.appendChild(lineEl);
-                        console.log("Added line at x=", x, "y1=", currentY1, "y2=", currentY2);
+                            lineEl.setAttribute('geometry', {
+                                primitive: 'box',
+                                depth: 0.01,
+                                height: 0.01,
+                                width: length
+                            });
+                            lineEl.setAttribute('material', { color: 'red' });
+                            lineEl.setAttribute('position', `${midX} ${midY} 0`);
+                            lineEl.setAttribute('rotation', `0 0 ${angle}`);
+                            lineEl.classList.add('graph-line');
+                            sceneEl.appendChild(lineEl);
+                            console.log("Added line at x=", x, "y1=", currentY1, "y2=", currentY2);
+                        }
+                    }
+                }
+            } else {
+                for (let y = -5; y < 5; y += 0.01) {
+                    let x1 = nerdamer(expr.sub('y', y)).solveFor('x');
+                    let x2 = nerdamer(expr.sub('y', y + 0.005)).solveFor('x');
+
+                    if (!Array.isArray(x1)) x1 = [x1];
+                    if (!Array.isArray(x2)) x2 = [x2];
+
+                    // Evaluate all the expressions in the arrays
+                    for(let i = 0; i < x1.length; i++) {
+                        x1[i] = nerdamer(x1[i]).evaluate();
+                    }
+                    for(let i = 0; i < x2.length; i++) {
+                        x2[i] = nerdamer(x2[i]).evaluate();
+                    }
+                    if(x1.length > x2.length) {
+                        for (let i = 0; i < x1.length; i++) {
+                            const currentX1 = x1[i];
+                            // Set currentX2 to the closest value to currentX1 in the x2 array
+                            let currentX2 = x2[0];
+                            var minDiff = 999999;
+                            for(let j = 0; j < x2.length; j++) {
+                                const diff = Math.abs(x2[j] - currentX1);
+                                if (diff < minDiff) {
+                                    minDiff = diff;
+                                    currentX2 = x2[j];
+                                    // Remove the value from the array so that it is not used again
+                                    // x2.splice(j, 1);
+                                    if(minDiff > 0.0051) {
+                                        console.log("Min diff: ", minDiff, "currentX2: ", currentX2, "currentX1: ", currentX1);
+                                    }
+                                }
+                            }
+
+                            const lineEl = document.createElement('a-entity');
+
+                            const midX = (currentX1 + currentX2) / 2;
+                            const midY = y + 0.0025;
+                            const length = Math.sqrt(Math.pow(0.005, 2) + Math.pow(currentX2 - currentX1, 2)); // ??
+                            const angle = Math.atan2(currentX2 - currentX1, 0.005) * radToDeg;
+
+                            lineEl.setAttribute('geometry', {
+                                primitive: 'box',
+                                depth: 0.01,
+                                height: 0.01,
+                                width: length
+                            });
+                            lineEl.setAttribute('material', { color: 'red' });
+                            lineEl.setAttribute('position', `${midX} ${midY} 0`);
+                            lineEl.setAttribute('rotation', `0 0 ${angle}`);
+                            lineEl.classList.add('graph-line');
+                            sceneEl.appendChild(lineEl);
+                            console.log("Added line at: x1=", currentX1, "x2=", currentX2, "y=", y);
+                        }
+                    } else {
+                        for (let i = 0; i < x2.length; i++) {
+                            const currentX2 = x2[i];
+                            // Set currentX1 to the closest value to currentX1 in the x2 array
+                            let currentX1 = x1[0];
+                            var minDiff = 999999;
+                            for(let j = 0; j < x1.length; j++) {
+                                const diff = Math.abs(x1[j] - currentX2);
+                                if (diff < minDiff) {
+                                    minDiff = diff;
+                                    currentX1 = x1[j];
+                                    // Remove the value from the array so that it is not used again
+                                    // x1.splice(j, 1);
+                                    if(minDiff > 0.0051) {
+                                        console.log("Min diff: ", minDiff, "currentX1: ", currentX1, "currentX2: ", currentX2);
+                                    }
+                                }
+                            }
+
+                            const lineEl = document.createElement('a-entity');
+
+                            const midX = (currentX1 + currentX2) / 2;
+                            const midY = y + 0.0025; 
+                            const length = Math.sqrt(Math.pow(0.005, 2) + Math.pow(currentX2 - currentX1, 2));
+                            const angle = Math.atan2(currentX2 - currentX1, 0.005) * radToDeg;
+
+                            lineEl.setAttribute('geometry', {
+                                primitive: 'box',
+                                depth: 0.01,
+                                height: 0.01,
+                                width: length
+                            });
+                            lineEl.setAttribute('material', { color: 'red' });
+                            lineEl.setAttribute('position', `${midX} ${midY} 0`);
+                            lineEl.setAttribute('rotation', `0 0 ${angle}`);
+                            lineEl.classList.add('graph-line');
+                            sceneEl.appendChild(lineEl);
+                            console.log("Added line at: x1=", currentX1, "x2=", currentX2, "y=", y);
+                        }
                     }
                 }
             }
+
+            
         }
 
         document.querySelector('a-scene').addEventListener('loaded', function() {

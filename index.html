@@ -96,6 +96,8 @@
             const previousLines = sceneEl.querySelectorAll('.graph-line');
             previousLines.forEach(line => line.parentNode.removeChild(line));
 
+            const fragment = document.createDocumentFragment();
+
             // Determine if x's correspond to more y's or vice versa
             // We will test on five random x values between -2 and 2
             averageYs = 0;
@@ -144,7 +146,7 @@
                                     minDiff = diff;
                                     currentY2 = y2[j];
                                     // Remove the value from the array so that it is not used again
-                                    y2.splice(j, 1);
+                                    //y2.splice(j, 1);
                                     if(minDiff > 0.0051) {
                                         console.log("Min diff: ", minDiff, "currentY2: ", currentY2, "currentY1: ", currentY1);
                                     }
@@ -168,7 +170,7 @@
                             lineEl.setAttribute('position', `${midX} ${midY} 0`);
                             lineEl.setAttribute('rotation', `0 0 ${angle}`);
                             lineEl.classList.add('graph-line');
-                            sceneEl.appendChild(lineEl);
+                            fragment.appendChild(lineEl);
                             console.log("Added line at x=", x, "y1=", currentY1, "y2=", currentY2);
                         }
                     } else {
@@ -183,7 +185,7 @@
                                     minDiff = diff;
                                     currentY1 = y1[j];
                                     // Remove the value from the array so that it is not used again
-                                    y1.splice(j, 1);
+                                    //y1.splice(j, 1);
                                     if(minDiff > 0.0051) {
                                         console.log("Min diff: ", minDiff, "currentY1: ", currentY1, "currentY2: ", currentY2);
                                     }
@@ -207,7 +209,7 @@
                             lineEl.setAttribute('position', `${midX} ${midY} 0`);
                             lineEl.setAttribute('rotation', `0 0 ${angle}`);
                             lineEl.classList.add('graph-line');
-                            sceneEl.appendChild(lineEl);
+                            fragment.appendChild(lineEl);
                             console.log("Added line at x=", x, "y1=", currentY1, "y2=", currentY2);
                         }
                     }
@@ -239,7 +241,7 @@
                                     minDiff = diff;
                                     currentX2 = x2[j];
                                     // Remove the value from the array so that it is not used again
-                                    x2.splice(j, 1);
+                                    //x2.splice(j, 1);
                                     if(minDiff > 0.0051) {
                                         console.log("Min diff: ", minDiff, "currentX2: ", currentX2, "currentX1: ", currentX1);
                                     }
@@ -263,7 +265,7 @@
                             lineEl.setAttribute('position', `${midX} ${midY} 0`);
                             lineEl.setAttribute('rotation', `0 0 ${angle}`);
                             lineEl.classList.add('graph-line');
-                            sceneEl.appendChild(lineEl);
+                            fragment.appendChild(lineEl);
                             console.log("Added line at: x1=", currentX1, "x2=", currentX2, "y=", y);
                         }
                     } else {
@@ -278,7 +280,7 @@
                                     minDiff = diff;
                                     currentX1 = x1[j];
                                     // Remove the value from the array so that it is not used again
-                                    x1.splice(j, 1);
+                                    //x1.splice(j, 1);
                                     if(minDiff > 0.0051) {
                                         console.log("Min diff: ", minDiff, "currentX1: ", currentX1, "currentX2: ", currentX2);
                                     }
@@ -302,14 +304,14 @@
                             lineEl.setAttribute('position', `${midX} ${midY} 0`);
                             lineEl.setAttribute('rotation', `0 0 ${angle}`);
                             lineEl.classList.add('graph-line');
-                            sceneEl.appendChild(lineEl);
+                            fragment.appendChild(lineEl);
                             console.log("Added line at: x1=", currentX1, "x2=", currentX2, "y=", y);
                         }
                     }
                 }
             }
 
-            
+            sceneEl.appendChild(fragment);            
         }
 
         document.querySelector('a-scene').addEventListener('loaded', function() {

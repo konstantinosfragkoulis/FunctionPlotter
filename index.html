@@ -97,22 +97,22 @@
             previousLines.forEach(line => line.parentNode.removeChild(line));
 
             // Determine if x's correspond to more y's or vice versa
-            // We will test on five random x values between -5 and 5
+            // We will test on five random x values between -2 and 2
             averageYs = 0;
-            for (let x = -5; x < 5; x += 1) {
+            for (let x = -2; x < 2; x += 1) {
                 let y = nerdamer(expr.sub('x', x)).solveFor('y');
                 if (!Array.isArray(y)) y = [y];
                 averageYs += y.length;
             }
-            averageYs /= 10;
+            averageYs /= 5;
 
             averageXs = 0;
-            for (let y = -5; y < 5; y += 1) {
+            for (let y = -2; y < 2; y += 1) {
                 let x = nerdamer(expr.sub('y', y)).solveFor('x');
                 if (!Array.isArray(x)) x = [x];
                 averageXs += x.length;
             }
-            averageXs /= 10;
+            averageXs /= 5;
 
 
             console.log("Avergae Xs: ", averageXs, "Average Ys: ", averageYs);
@@ -144,7 +144,7 @@
                                     minDiff = diff;
                                     currentY2 = y2[j];
                                     // Remove the value from the array so that it is not used again
-                                    // y2.splice(j, 1);
+                                    y2.splice(j, 1);
                                     if(minDiff > 0.0051) {
                                         console.log("Min diff: ", minDiff, "currentY2: ", currentY2, "currentY1: ", currentY1);
                                     }
@@ -183,7 +183,7 @@
                                     minDiff = diff;
                                     currentY1 = y1[j];
                                     // Remove the value from the array so that it is not used again
-                                    // y1.splice(j, 1);
+                                    y1.splice(j, 1);
                                     if(minDiff > 0.0051) {
                                         console.log("Min diff: ", minDiff, "currentY1: ", currentY1, "currentY2: ", currentY2);
                                     }
@@ -239,7 +239,7 @@
                                     minDiff = diff;
                                     currentX2 = x2[j];
                                     // Remove the value from the array so that it is not used again
-                                    // x2.splice(j, 1);
+                                    x2.splice(j, 1);
                                     if(minDiff > 0.0051) {
                                         console.log("Min diff: ", minDiff, "currentX2: ", currentX2, "currentX1: ", currentX1);
                                     }
@@ -250,7 +250,7 @@
 
                             const midX = (currentX1 + currentX2) / 2;
                             const midY = y + 0.0025;
-                            const length = Math.sqrt(Math.pow(0.005, 2) + Math.pow(currentX2 - currentX1, 2)); // ??
+                            const length = Math.sqrt(Math.pow(0.005, 2) + Math.pow(currentX2 - currentX1, 2));
                             const angle = Math.atan2(currentX2 - currentX1, 0.005) * radToDeg;
 
                             lineEl.setAttribute('geometry', {
@@ -278,7 +278,7 @@
                                     minDiff = diff;
                                     currentX1 = x1[j];
                                     // Remove the value from the array so that it is not used again
-                                    // x1.splice(j, 1);
+                                    x1.splice(j, 1);
                                     if(minDiff > 0.0051) {
                                         console.log("Min diff: ", minDiff, "currentX1: ", currentX1, "currentX2: ", currentX2);
                                     }

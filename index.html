@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My 3D Function Plotter</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/10.0.0/math.min.js"></script>
     <style>
         #functionInput {
             position: absolute;
@@ -14,6 +13,11 @@
             z-index: 10;
         }
     </style>
+    <script src="nerdamer/nerdamer.core.js"></script>
+    <script src="nerdamer/Algebra.js"></script>
+    <script src="nerdamer/Extra.js"></script>
+    <script src="nerdamer/Calculus.js"></script>
+    <script src="nerdamer/Solve.js"></script>
 </head>
 <body>
     <input id="functionInput" type="text" placeholder="Enter a function (e.g., sin(x), x^2)" />
@@ -24,13 +28,20 @@
     <script>
         document.getElementById('functionInput').addEventListener('change', function(event) {
             let functionText = event.target.value;
-            functionText = functionText.replace(/ln/g, 'log');
             try {
-                const expr = math.compile(functionText);
+                console.log("Parsing function: ", functionText)
+                if (!functionText.includes('=') && (functionText.includes('x') || functionText.includes('y'))) {
+                    if (functionText.includes('x')) {
+                        functionText += '=y';
+                    } else if (functionText.includes('y')) {
+                        functionText += '=x';
+                    }
+                }
+                const expr = nerdamer(functionText);
                 console.log("Parsed expression: ", expr);
                 updateGraph(expr);
             } catch (error) {
-                console.error('Error parsing function. Please check the syntax.');
+                console.error('Error parsing function. Please check the syntax.\n', error);
             }
         });
 
@@ -78,33 +89,45 @@
             textEl.setAttribute('align', 'center');
             sceneEl.appendChild(textEl);
         }
-
+        
         function updateGraph(expr) {
             const sceneEl = document.querySelector('a-scene');
             const previousLines = sceneEl.querySelectorAll('.graph-line');
             previousLines.forEach(line => line.parentNode.removeChild(line));
 
             for (let x = -5; x < 5; x += 0.01) {
-                const y1 = expr.evaluate({x: x});
-                const y2 = expr.evaluate({x: x + 0.005});
-                const lineEl = document.createElement('a-entity');
+                let y1 = nerdamer(expr.sub('x', x)).solveFor('y');
+                let y2 = nerdamer(expr.sub('x', x + 0.005)).solveFor('y');
 
-                const midX = x + 0.0025;
-                const midY = (y1 + y2) / 2;
-                const length = Math.sqrt(Math.pow(0.005, 2) + Math.pow(y2 - y1, 2));
-                const angle = Math.atan2(y2 - y1, 0.005) * (180 / Math.PI);
+                if (!Array.isArray(y1)) y1 = [y1];
+                if (!Array.isArray(y2)) y2 = [y2];
 
-                lineEl.setAttribute('geometry', {
-                    primitive: 'box',
-                    depth: 0.01,
-                    height: 0.01,
-                    width: length
-                });
-                lineEl.setAttribute('material', {color: 'red'});
-                lineEl.setAttribute('position', `${midX} ${midY} 0`);
-                lineEl.setAttribute('rotation', `0 0 ${angle}`);
-                lineEl.classList.add('graph-line');
-                sceneEl.appendChild(lineEl);
+                const minLength = Math.min(y1.length, y2.length);
+
+                for (let i = 0; i < minLength; i++) {
+                    const currentY1 = nerdamer(y1[i]).evaluate();
+                    const currentY2 = nerdamer(y2[i]).evaluate();
+
+                    const lineEl = document.createElement('a-entity');
+
+                    const midX = x + 0.0025;
+                    const midY = (currentY1 + currentY2) / 2;
+                    const length = Math.sqrt(Math.pow(0.005, 2) + Math.pow(currentY2 - currentY1, 2));
+                    const angle = Math.atan2(currentY2 - currentY1, 0.005) * (180 / Math.PI);
+
+                    lineEl.setAttribute('geometry', {
+                        primitive: 'box',
+                        depth: 0.01,
+                        height: 0.01,
+                        width: length
+                    });
+                    lineEl.setAttribute('material', { color: 'red' });
+                    lineEl.setAttribute('position', `${midX} ${midY} 0`);
+                    lineEl.setAttribute('rotation', `0 0 ${angle}`);
+                    lineEl.classList.add('graph-line');
+                    sceneEl.appendChild(lineEl);
+                    console.log("Added line at x=", x, "y1=", currentY1, "y2=", currentY2);
+                }
             }
         }
 

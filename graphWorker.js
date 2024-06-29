@@ -1,13 +1,12 @@
 importScripts('nerdamer/nerdamer.core.js', 'nerdamer/Algebra.js', 'nerdamer/Extra.js', 'nerdamer/Calculus.js', 'nerdamer/Solve.js');
 
 const radToDeg = 180 / Math.PI;
-let ranges = [];
 
-function updateGraph(expr, _range, is3D) {
+function updateGraph(expr, _range, variables) {
     
     let boxesInfo = [];
 
-    if(is3D) {
+    if(variables.length === 3) {
         for (let x = _range[0]; x < _range[1]; x += 0.1) {
             for (let y = -5; y < 5; y += 0.1) {
                 let z = expr.sub('x', x).sub('y', y).solveFor('z');
@@ -31,28 +30,27 @@ function updateGraph(expr, _range, is3D) {
                 }
             }
         }
-    } else {
+    } else if(variables.length === 2) {
+        let varx = variables[0];
+        let vary = variables[1];
         averageYs = 0;
         for (let x = -2; x < 2; x += 1) {
-            let y = expr.sub('x', x).solveFor('y');
+            let y = expr.sub(varx, x).solveFor(vary);
             if (!Array.isArray(y)) y = [y];
             averageYs += y.length;
         }
 
         averageXs = 0;
         for (let y = -2; y < 2; y += 1) {
-            let x = expr.sub('y', y).solveFor('x');
+            let x = expr.sub(vary, y).solveFor(varx);
             if (!Array.isArray(x)) x = [x];
             averageXs += x.length;
         }
 
-
-        console.log("Avergae Xs: ", averageXs, "Average Ys: ", averageYs);
-
         if(averageXs > averageYs) {
             for (let x = _range[0]; x < _range[1]; x += 0.01) {
-                let y1 = expr.sub('x', x).solveFor('y');
-                let y2 = expr.sub('x', x + 0.005).solveFor('y');
+                let y1 = expr.sub(varx, x).solveFor(vary);
+                let y2 = expr.sub(varx, x + 0.005).solveFor(vary);
 
                 if (!Array.isArray(y1)) y1 = [y1];
                 if (!Array.isArray(y2)) y2 = [y2];
@@ -79,17 +77,35 @@ function updateGraph(expr, _range, is3D) {
                             }
                         }
 
-                        const deltaY = currentY2 - currentY1;
-                        const midX = x + 0.0025;
-                        const midY = (currentY1 + currentY2) / 2;
-                        const length = Math.sqrt(0.000025 + Math.pow(deltaY, 2));
-                        const angle = Math.atan2(deltaY, 0.005) * radToDeg;
+                        var deltaY = currentY2 - currentY1;
+                        var midX = 0;
+                        var midY = 0;
+                        var length = Math.sqrt(0.000025 + Math.pow(deltaY, 2));
+                        var angle = Math.atan2(deltaY, 0.005) * radToDeg;
+                        var rot = { x: 0, y: 0, z: angle };
+
+                        if(variables[0] === 'x' && variables[1] === 'y') {
+                            midX = x + 0.0025;
+                            midY = (currentY1 + currentY2) / 2;
+                            midZ = 0;
+                            rot = { x: 0, y: 0, z: angle };
+                        } else if(variables[0] === 'x' && variables[1] === 'z') {
+                            midX = x + 0.0025;
+                            midY = 0;
+                            midZ = (currentY1 + currentY2) / 2;
+                            rot = { x: 0, y: angle, z: 0 };
+                        } else if(variables[0] === 'y' && variables[1] === 'z') {
+                            midX = 0;
+                            midY = (currentY1 + currentY2) / 2;
+                            midZ = x + 0.0025;
+                            rot = { x: angle, y: 0, z: 0 };
+                        }
 
                         const boxInfo = {
-                            position: { x: midX, y: midY, z: 0 },
+                            position: { x: midX, y: midY, z: midZ },
                             size: { width: length, height: 0.01, depth: 0.01 },
                             color: 'red',
-                            rotation: { x: 0, y: 0, z: angle }
+                            rotation: rot
                         };
 
                         boxesInfo.push(boxInfo);
@@ -109,17 +125,35 @@ function updateGraph(expr, _range, is3D) {
                             }
                         }
 
-                        const deltaY = currentY2 - currentY1;
-                        const midX = x + 0.0025;
-                        const midY = (currentY1 + currentY2) / 2;
-                        const length = Math.sqrt(0.000025 + Math.pow(deltaY, 2));
-                        const angle = Math.atan2(deltaY, 0.005) * radToDeg;
+                        var deltaY = currentY2 - currentY1;
+                        var midX = 0;
+                        var midY = 0;
+                        var length = Math.sqrt(0.000025 + Math.pow(deltaY, 2));
+                        var angle = Math.atan2(deltaY, 0.005) * radToDeg;
+                        var rot = { x: 0, y: 0, z: angle };
+
+                        if(variables[0] === 'x' && variables[1] === 'y') {
+                            midX = x + 0.0025;
+                            midY = (currentY1 + currentY2) / 2;
+                            midZ = 0;
+                            rot = { x: 0, y: 0, z: angle };
+                        } else if(variables[0] === 'x' && variables[1] === 'z') {
+                            midX = x + 0.0025;
+                            midY = 0;
+                            midZ = (currentY1 + currentY2) / 2;
+                            rot = { x: 0, y: angle, z: 0 };
+                        } else if(variables[0] === 'y' && variables[1] === 'z') {
+                            midX = 0;
+                            midY = (currentY1 + currentY2) / 2;
+                            midZ = x + 0.0025;
+                            rot = { x: angle, y: 0, z: 0 };
+                        }
 
                         const boxInfo = {
-                            position: { x: midX, y: midY, z: 0 },
+                            position: { x: midX, y: midY, z: midZ },
                             size: { width: length, height: 0.01, depth: 0.01 },
                             color: 'red',
-                            rotation: { x: 0, y: 0, z: angle }
+                            rotation: rot
                         };
 
                         boxesInfo.push(boxInfo);
@@ -128,8 +162,8 @@ function updateGraph(expr, _range, is3D) {
             }
         } else {
             for (let y = _range[0]; y < _range[1]; y += 0.01) {
-                let x1 = expr.sub('y', y).solveFor('x');
-                let x2 = expr.sub('y', y + 0.005).solveFor('x');
+                let x1 = expr.sub(vary, y).solveFor(varx);
+                let x2 = expr.sub(vary, y + 0.005).solveFor(varx);
 
                 if (!Array.isArray(x1)) x1 = [x1];
                 if (!Array.isArray(x2)) x2 = [x2];
@@ -156,17 +190,36 @@ function updateGraph(expr, _range, is3D) {
                             }
                         }
 
-                        const deltaX = currentX2 - currentX1;
-                        const midX = (currentX1 + currentX2) / 2;
-                        const midY = y + 0.0025;
-                        const length = Math.sqrt(0.000025 + Math.pow(deltaX, 2));
-                        const angle = Math.atan2(deltaX, 0.005) * radToDeg;
+                        var deltaX = currentX2 - currentX1;
+                        var midX = (currentX1 + currentX2) / 2;
+                        var midY = y + 0.0025;
+                        var midZ = 0;
+                        var length = Math.sqrt(0.000025 + Math.pow(deltaX, 2));
+                        var angle = Math.atan2(deltaX, 0.005) * radToDeg;
+                        var rot = { x: 0, y: 0, z: angle };
+
+                        if(variables[0] === 'x' && variables[1] === 'y') {
+                            midX = (currentX1 + currentX2) / 2;
+                            midY = y + 0.0025;
+                            midZ = 0;
+                            rot = { x: 0, y: 0, z: angle };
+                        } else if(variables[0] === 'x' && variables[1] === 'z') {
+                            midX = x + 0.0025;
+                            midY = 0;
+                            midZ = (currentX1 + currentX2) / 2;
+                            rot = { x: 0, y: angle, z: 0 };
+                        } else if(variables[0] === 'y' && variables[1] === 'z') {
+                            midX = 0;
+                            midY = x + 0.0025;
+                            midZ = (currentX1 + currentX2) / 2;
+                            rot = { x: angle, y: 0, z: 0 };
+                        }
 
                         const boxInfo = {
-                            position: { x: midX, y: midY, z: 0 },
+                            position: { x: midX, y: midY, z: midZ },
                             size: { width: length, height: 0.01, depth: 0.01 },
                             color: 'red',
-                            rotation: { x: 0, y: 0, z: angle }
+                            rotation: rot
                         };
 
                         boxesInfo.push(boxInfo);
@@ -186,17 +239,36 @@ function updateGraph(expr, _range, is3D) {
                             }
                         }
 
-                        const deltaX = currentX2 - currentX1;
-                        const midX = (currentX1 + currentX2) / 2;
-                        const midY = y + 0.0025; 
-                        const length = Math.sqrt(0.000025 + Math.pow(deltaX, 2));
-                        const angle = Math.atan2(deltaX, 0.005) * radToDeg;
+                        var deltaX = currentX2 - currentX1;
+                        var midX = 0
+                        var midY = 0; 
+                        var midZ = 0;
+                        var length = Math.sqrt(0.000025 + Math.pow(deltaX, 2));
+                        var angle = Math.atan2(deltaX, 0.005) * radToDeg;
+                        var rot = { x: 0, y: 0, z: angle };
+
+                        if(variables[0] === 'x' && variables[1] === 'y') {
+                            midX = (currentX1 + currentX2) / 2;
+                            midY = y + 0.0025;
+                            midZ = 0;
+                            rot = { x: 0, y: 0, z: angle };
+                        } else if(variables[0] === 'x' && variables[1] === 'z') {
+                            midX = y + 0.0025;
+                            midY = 0;
+                            midZ = (currentX1 + currentX2) / 2;
+                            rot = { x: 0, y: angle, z: 0 };
+                        } else if(variables[0] === 'y' && variables[1] === 'z') {
+                            midX = 0;
+                            midY = y + 0.0025;
+                            midZ = (currentX1 + currentX2) / 2;
+                            rot = { x: angle, y: 0, z: 0 };
+                        }
 
                         const boxInfo = {
-                            position: { x: midX, y: midY, z: 0 },
+                            position: { x: midX, y: midY, z: midZ },
                             size: { width: length, height: 0.01, depth: 0.01 },
                             color: 'red',
-                            rotation: { x: 0, y: 0, z: angle }
+                            rotation: rot
                         };
 
                         boxesInfo.push(boxInfo);
@@ -224,16 +296,21 @@ self.addEventListener('message', (e) => {
         }
     }
 
+    let variables = [];
+    if(functionText.includes('x')) variables.push('x');
+    if(functionText.includes('y')) variables.push('y');
+    if(functionText.includes('z')) variables.push('z');
+
 
     const expr = nerdamer(functionText);
     console.log("Parsed expression: ", expr);
 
     if(functionText.includes('z')) {
-        const result = updateGraph(expr, range, true);
+        const result = updateGraph(expr, range, variables);
     
         self.postMessage(result);
     } else {
-        const result = updateGraph(expr, range, false);
+        const result = updateGraph(expr, range, variables);
     
         self.postMessage(result);
     }

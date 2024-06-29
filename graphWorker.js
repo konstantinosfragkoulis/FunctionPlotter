@@ -8,26 +8,24 @@ function updateGraph(expr, _range, is3D) {
     let boxesInfo = [];
 
     if(is3D) {
-        for (let x = _range[0]; x < _range[1]; x += 0.2) {
-            for (let y = -5; y < 5; y += 0.2) {
+        for (let x = _range[0]; x < _range[1]; x += 0.1) {
+            for (let y = -5; y < 5; y += 0.1) {
                 let z = expr.sub('x', x).sub('y', y).solveFor('z');
                 if (!Array.isArray(z)) z = [z];
 
                 for (let i = 0; i < z.length; i++) {
                     z[i] = z[i].evaluate();
-                    console.log("Z: ", z[i])
 
                     const midX = x;
                     const midY = y;
                     const midZ = z[i];
 
                     const boxInfo = {
-                        position: { x: midX, y: midY, z: midZ },
+                        position: { x: midX, y: midY, z: midZ+1-1 },
                         size: { width: 0.01, height: 0.01, depth: 0.01 },
                         color: 'red',
                         rotation: { x: 0, y: 0, z: 0 }
                     };
-                    console.log(`Worker ${i} x = `, x, " y = ", y, " z = ", z[i])
 
                     boxesInfo.push(boxInfo);
                 }
@@ -209,7 +207,7 @@ function updateGraph(expr, _range, is3D) {
     }
 
     
-    console.log("Boxes info: ", boxesInfo);
+
     return boxesInfo;
 }
 

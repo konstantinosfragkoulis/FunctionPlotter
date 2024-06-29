@@ -124,3 +124,38 @@ document.querySelector('a-scene').addEventListener('loaded', function() {
     drawAxes();
     addAxisLabels();
 });
+
+AFRAME.registerComponent('move-up-down', {
+    schema: {
+      speed: {type: 'number', default: 1}
+    },
+    init: function () {
+      this.direction = 0;
+      this.keyDownHandler = this.keyDownHandler.bind(this);
+      this.keyUpHandler = this.keyUpHandler.bind(this);
+    },
+    play: function () {
+      window.addEventListener('keydown', this.keyDownHandler);
+      window.addEventListener('keyup', this.keyUpHandler);
+    },
+    pause: function () {
+      window.removeEventListener('keydown', this.keyDownHandler);
+      window.removeEventListener('keyup', this.keyUpHandler);
+      this.direction = 0;
+    },
+    keyDownHandler: function (evt) {
+      if (evt.key === 'q') this.direction = -1;
+      if (evt.key === 'e') this.direction = 1;
+    },
+    keyUpHandler: function (evt) {
+      if (evt.key === 'q' && this.direction === -1) this.direction = 0;
+      if (evt.key === 'e' && this.direction === 1) this.direction = 0;
+    },
+    tick: function (time, deltaTime) {
+      if (this.direction !== 0) {
+        let position = this.el.getAttribute('position');
+        position.y += this.direction * this.data.speed * deltaTime / 1000;
+        this.el.setAttribute('position', position);
+      }
+    }
+  });

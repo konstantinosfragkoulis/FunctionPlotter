@@ -16,7 +16,11 @@ document.getElementById('functionInput').addEventListener('change', function(eve
         for (let i = 0; i < numCores; i++) {
             const start = totalStart + i * rangeSize;
             const end = start + rangeSize;
-            ranges.push([start, end]);
+            if(i != 0) {
+                ranges.push([start, end-0.005]);
+            } else {
+                ranges.push([start, end]);
+            }
         }
         console.log(ranges);
 
@@ -48,6 +52,7 @@ document.getElementById('functionInput').addEventListener('change', function(eve
                     boxEl.setAttribute('rotation', `${boxInfo.rotation.x} ${boxInfo.rotation.y} ${boxInfo.rotation.z}`);
                     boxEl.classList.add('graph-line');
                     fragment.appendChild(boxEl);
+                    console.log('Box added at x=', boxInfo.position.x, 'y=', boxInfo.position.y, 'z=', boxInfo.position.z);
                 });
     
                 sceneEl.appendChild(fragment);
@@ -64,30 +69,6 @@ document.getElementById('functionInput').addEventListener('change', function(eve
 
             workers.push(worker);
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     } catch (error) {
         console.error('Error parsing function.\n', error);

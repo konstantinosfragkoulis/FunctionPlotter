@@ -1,11 +1,15 @@
+let completedWorkers = 0;
+const numCores = navigator.hardwareConcurrency;
+
+
 document.getElementById('functionInput').addEventListener('change', function(event) {
     let functionText = event.target.value;
     try {
         
+        completedWorkers = 0;
         const workers = [];
         var clearedScene = false;
 
-        const numCores = navigator.hardwareConcurrency;
         console.log(`Number of cores: ${numCores}`);
 
         const totalStart = -5;
@@ -26,6 +30,8 @@ document.getElementById('functionInput').addEventListener('change', function(eve
 
         for (let i = 0; i < numCores; i++) {
             const worker = new Worker('graphWorker.js');
+            completedWorkers++;
+            updateProgressBar();
             console.log(`Created worker ${i}.`);
         
             worker.onmessage = function(e) {
@@ -56,6 +62,8 @@ document.getElementById('functionInput').addEventListener('change', function(eve
                 });
     
                 sceneEl.appendChild(fragment);
+                completedWorkers += 4;
+                updateProgressBar();
 
                 worker.terminate();
                 console.log(`Worker ${i} terminated.`);
@@ -159,3 +167,8 @@ AFRAME.registerComponent('move-up-down', {
       }
     }
   });
+
+function updateProgressBar() {
+    const progressPercentage = (completedWorkers / (numCores*5)) * 100;
+    document.getElementById('progressBar').style.width = `${progressPercentage}%`;
+}

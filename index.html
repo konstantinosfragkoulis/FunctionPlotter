@@ -6,12 +6,30 @@
     <title>My 3D Function Plotter</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <meta name="description" content="A 3D function plotter using A-Frame and Nerdamer. Plot any 3 or 2 variable equation in 3D space!">
+    <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <style>
         #functionInput {
             position: absolute;
-            top: 10px;
-            left: 10px;
+            top: 20px;
+            left: 20px;
             z-index: 10;
+            padding: 10px 15px;
+            border: 2px solid #5aaaff;
+            border-radius: 5px;
+            outline: none;
+            font-size: 16px;
+            color: #333;
+            transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            width: 250px;
+        }
+
+        #functionInput:focus {
+            border-color: #5aaaff;
+            box-shadow: 0 0 8px rgba(90, 123, 255, 0.5);
+        }
+
+        #functionInput::placeholder {
+            color: #999;
         }
     </style>
     <script src="nerdamer/nerdamer.core.js"></script>
@@ -23,7 +41,7 @@
 <body>
     <input id="functionInput" type="text" placeholder="Enter an equation (e.g. y=sin(x))" />
     <a-scene background="color: #ECECEC">
-        <a-camera position="0 0 5"wasd-controls="acceleration: 10"></a-camera>
+        <a-camera position="0.5 0.5 5"wasd-controls="acceleration: 10" move-up-down></a-camera>
     </a-scene>
 
     <script src="App.js"></script>

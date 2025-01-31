@@ -1,12 +1,12 @@
 let completedWorkers = 0;
 const numCores = navigator.hardwareConcurrency;
 
-
 document.getElementById('functionInput').addEventListener('change', function(event) {
     let functionText = event.target.value;
     try {
-        
         completedWorkers = 0;
+        allPositions = [];
+        allVariables = null;
         const workers = [];
         var clearedScene = false;
 
@@ -20,11 +20,7 @@ document.getElementById('functionInput').addEventListener('change', function(eve
         for (let i = 0; i < numCores; i++) {
             const start = totalStart + i * rangeSize;
             const end = start + rangeSize;
-            if(i != 0) {
-                ranges.push([start, end-0.005]);
-            } else {
-                ranges.push([start, end]);
-            }
+            ranges.push([start, end]);
         }
         console.log(ranges);
 
@@ -35,46 +31,70 @@ document.getElementById('functionInput').addEventListener('change', function(eve
             console.log(`Created worker ${i}.`);
         
             worker.onmessage = function(e) {
-                const boxesInfo = e.data;
-    
-                const sceneEl = document.querySelector('a-scene');
-                if(!clearedScene) {
-                    const graphLines = document.querySelectorAll('.graph-line');
-                    graphLines.forEach(graphLine => graphLine.remove());
-                    clearedScene = true;
-                    console.log('Scene cleared.');
+                if (e.data.error) {
+                    console.error(e.data.error);
+                    worker.terminate();
+                    return;
                 }
-
-                const fragment = document.createDocumentFragment();
-    
-
-                boxesInfo.forEach(boxInfo => {
-                    const boxEl = document.createElement('a-box');
-                    boxEl.setAttribute('width', boxInfo.size.width.toString());
-                    boxEl.setAttribute('height', boxInfo.size.height.toString());
-                    boxEl.setAttribute('depth', boxInfo.size.depth.toString());
-                    boxEl.setAttribute('color', boxInfo.color);
-                    boxEl.setAttribute('position', `${boxInfo.position.x} ${boxInfo.position.y} ${boxInfo.position.z}`);
-                    boxEl.setAttribute('rotation', `${boxInfo.rotation.x} ${boxInfo.rotation.y} ${boxInfo.rotation.z}`);
-                    boxEl.classList.add('graph-line');
-                    fragment.appendChild(boxEl);
-                    console.log('Box added at x=', boxInfo.position.x, 'y=', boxInfo.position.y, 'z=', boxInfo.position.z);
-                });
-    
-                sceneEl.appendChild(fragment);
-                completedWorkers += 4;
-                updateProgressBar();
-
+                
+                const positions = e.data.positions;
+                const variables = e.data.variables;
+                if (!allVariables) {
+                    allVariables = variables;
+                }
+                allPositions.push(...positions);
+                
                 worker.terminate();
                 console.log(`Worker ${i} terminated.`);
+
+                if (--completedWorkers === 0) {
+                    const sceneEl = document.querySelector('a-scene');
+                    if (!clearedScene) {
+                        const graphLines = document.querySelectorAll('.graph-line');
+                        graphLines.forEach(g => g.remove());
+                        clearedScene = true;
+                        console.log("Scene cleared.");
+                    }
+                    const fragment = document.createDocumentFragment();
+                    
+                    if (allVariables.length === 3) {
+                        for (let j = 0; j < allPositions.length; j += 3) {
+                            const x = allPositions[j];
+                            const y = allPositions[j + 1];
+                            const z = allPositions[j + 2];
+                            const boxEl = document.createElement('a-box');
+                            boxEl.setAttribute('width', "0.02");
+                            boxEl.setAttribute('height', "0.02");
+                            boxEl.setAttribute('depth', "0.02");
+                            boxEl.setAttribute('color', "red");
+                            boxEl.setAttribute('position', x + " " + y + " " + z);
+                            boxEl.classList.add('graph-line');
+                            fragment.appendChild(boxEl);
+                        }
+                    } else if (allVariables.length === 2) {
+                        for (let j = 0; j < allPositions.length; j += 6) {
+                            const x1 = allPositions[j];
+                            const y1 = allPositions[j + 1];
+                            const z1 = allPositions[j + 2];
+                            const x2 = allPositions[j + 3];
+                            const y2 = allPositions[j + 4];
+                            const z2 = allPositions[j + 5];
+                            const lineEl = document.createElement('a-entity');
+                            lineEl.setAttribute('line', `start: ${x1} ${y1} ${z1}; end: ${x2} ${y2} ${z2}; color: red`);
+                            lineEl.classList.add('graph-line');
+                            fragment.appendChild(lineEl);
+                        }
+                    }
+                    sceneEl.appendChild(fragment);
+                    updateProgressBar();
+                }
             };
         
             worker.onerror = function(error) {
                 console.error(`Error in Worker ${i}:`, error.message);
             };
         
-            worker.postMessage({ functionText: functionText, range: ranges[i]});
-
+            worker.postMessage({ functionText: functionText, range: ranges[i] });
             workers.push(worker);
         }
 
